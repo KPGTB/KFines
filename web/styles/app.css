@@ -1,0 +1,17 @@
+.App {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 10vh;
+}
+
+img {
+    border: solid 3px aqua;
+    width: 15vw;
+}
+
+h1 {
+    color: red;
+}
