@@ -202,7 +202,7 @@ function InfoMenu()
 
         ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesInfoMenu", {
             title = _U("menu_main_info"),
-            align = "center-right",
+            align = "top-right",
             elements = elements,
         }, function(data,menu)
             if data.current.value ~= nil then
