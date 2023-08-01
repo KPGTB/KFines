@@ -93,7 +93,7 @@ RegisterCommand("--kfines:npc", function()
 
     ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesMainMenu", {
         title = _U("menu_main"),
-        align = "center-right",
+        align = "top-right",
         elements = elements,
     }, function(data,menu)
         if data.current.name == "paid" then PaidMenu() 
@@ -128,7 +128,7 @@ function PaidMenu()
 
         ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesPaidMenu", {
             title = _U("menu_main_paid"),
-            align = "center-right",
+            align = "top-right",
             elements = elements,
         }, function(data,menu)
             TriggerEvent("kfines:open", true, data.current.value)
@@ -152,7 +152,7 @@ function PayMenu()
 
         ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesPayMenu", {
             title = _U("menu_main_pay"),
-            align = "center-right",
+            align = "top-right",
             elements = elements,
         }, function(data,menu)
             TriggerEvent("kfines:open", true, data.current.value)

@@ -1,12 +1,12 @@
 Config = {}
 
-Config.Locale = 'pl'
+Config.Locale = 'en'
 Config.TimeToPay = 3 * 24 * 60 * 60 * 1000
 Config.NotPaidModifier = 1.25
 Config.AllowFakePlayers = false
 Config.ShowDistance = 20
 Config.TimeZone = "+02:00"
-Config.DOBFormat = "en-GB"
+Config.DOBFormat = "m/d/y"
 Config.NPC = {
     pos = vector3(440.6174, -978.9453, 30.68958),
     heading = 180.0,
