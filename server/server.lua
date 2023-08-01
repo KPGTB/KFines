@@ -38,6 +38,36 @@ Citizen.CreateThread(function()
 					date = v.date,
 					payUntil = v.payUntil,
 					paid = v.paid,
+					afterTime = v.afterTime,
+				})
+			end
+
+			cb(elements)
+		end)
+	end)
+
+	ESX.RegisterServerCallback("traffic_tickets_get_all", function(source, cb)
+
+		MySQL.Async.fetchAll("SELECT * FROM kfines", {}, function(result)
+			
+			elements = {}
+
+			for _,v in pairs(result) do
+				table.insert(elements, {
+					id = v.id,
+					policeName = v.copName,
+					policeRank = v.copRank,
+					policeBadge = v.copBadge,
+					signature = v.signature,
+					citizenName = v.citizenName,
+					citizenDOB = v.citizenDOB,
+					citizenSex = v.citizenSex,
+					fine = v.fine,
+					reason = v.reason,
+					date = v.date,
+					payUntil = v.payUntil,
+					paid = v.paid,
+					afterTime = v.afterTime,
 				})
 			end
 
@@ -124,7 +154,7 @@ RegisterNetEvent("kfines:apply", function(data)
 	date = data.date:gsub("Z", " "):gsub("T", " ")
 	payUntil = data.payUntil:gsub("Z", " "):gsub("T", " ")
 
-	MySQL.Async.insert("INSERT INTO kfines(copIdentifier, copName, copRank, copBadge, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, date, payUntil, signature, paid) VALUES (@copIdentifier, @copName, @copRank, @copBadge, @citizenIdentifier, @citizenName, @citizenSex, @citizenDOB, @fine, @reason, CONVERT_TZ(@date, '+00:00', @tz), CONVERT_TZ(@payUntil, '+00:00', @tz), @signature, @paid)",
+	MySQL.Async.insert("INSERT INTO kfines(copIdentifier, copName, copRank, copBadge, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, date, payUntil, signature) VALUES (@copIdentifier, @copName, @copRank, @copBadge, @citizenIdentifier, @citizenName, @citizenSex, @citizenDOB, @fine, @reason, CONVERT_TZ(@date, '+00:00', @tz), CONVERT_TZ(@payUntil, '+00:00', @tz), @signature)",
 		{
 			copIdentifier = xPlayer.identifier,
 			copName = data.policeName,
@@ -139,7 +169,6 @@ RegisterNetEvent("kfines:apply", function(data)
 			date = date,
 			payUntil = payUntil,
 			signature = data.signature,
-			paid = false,
 			tz = Config.TimeZone,
 		}, function(id)
 			data.id = id
@@ -188,13 +217,13 @@ function Pay(id, auto)
 			account.addMoney(fine)
 		end)
 
-		MySQL.Async.execute("UPDATE kfines SET paid=true WHERE id=@id", {id = id})
+		MySQL.Async.execute("UPDATE kfines SET paid=true, afterTime=@afterTime WHERE id=@id", {id = id, afterTime = auto})
 	end)
 end
 
 Citizen.CreateThread(function()
     MySQL.ready(function()
-        MySQL.Async.execute("CREATE TABLE IF NOT EXISTS `kfines` (`id` INT NOT NULL AUTO_INCREMENT , `copIdentifier` TEXT NOT NULL, `copName` TEXT NOT NULL, `copRank` TEXT NOT NULL, `copBadge` TEXT NOT NULL, `citizenIdentifier` TEXT NULL, `citizenName` TEXT NOT NULL,`citizenSex` INT NOT NULL,`citizenDOB` TEXT NOT NULL, `fine` INT NOT NULL, `reason` TEXT NOT NULL, `date` TIMESTAMP NOT NULL, `payUntil` TIMESTAMP NOT NULL, `signature` TEXT NOT NULL, `paid` BOOLEAN NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;")
+        MySQL.Async.execute("CREATE TABLE IF NOT EXISTS `kfines` (`id` INT NOT NULL AUTO_INCREMENT , `copIdentifier` TEXT NOT NULL, `copName` TEXT NOT NULL, `copRank` TEXT NOT NULL, `copBadge` TEXT NOT NULL, `citizenIdentifier` TEXT NULL, `citizenName` TEXT NOT NULL,`citizenSex` INT NOT NULL,`citizenDOB` TEXT NOT NULL, `fine` INT NOT NULL, `reason` TEXT NOT NULL, `date` TIMESTAMP NOT NULL, `payUntil` TIMESTAMP NOT NULL, `signature` TEXT NOT NULL, `paid` BOOLEAN NOT NULL DEFAULT FALSE, `afterTime` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`)) ENGINE = InnoDB;")
     end)
 end)
 

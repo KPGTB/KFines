@@ -116,8 +116,12 @@ function PaidMenu()
 
     ESX.TriggerServerCallback("traffic_tickets_get", function(result)
         for _,v in pairs(result) do
+            label = _U("menu_ticket", v.id, v.fine)
+            if v.afterTime then
+                label = _U("menu_ticket_after", v.id, v.fine, ((v.fine * Config.NotPaidModifier) - v.fine))
+            end
             table.insert(elements, {
-                label = _U("menu_ticket", v.id, v.fine),
+                label = label,
                 value = v
             })
         end
@@ -160,7 +164,57 @@ function PayMenu()
 end
 
 function InfoMenu()
+    local elements = {}
 
+    ESX.TriggerServerCallback("traffic_tickets_get_all", function(result)
+        paid = 0
+        toPay = 0
+
+        paidMoney = 0
+        toPayMoney = 0
+
+        for _,v in pairs(result) do
+            if v.paid then
+                paid = paid + 1
+                if v.afterTime then
+                    paidMoney = paidMoney + (Config.NotPaidModifier * v.fine)
+                else
+                    paidMoney = paidMoney + v.fine
+                end
+            else
+                toPay = toPay + 1
+                toPayMoney = toPayMoney + v.fine
+            end
+
+            label = _U("menu_ticket_info", v.id, v.fine, v.paid)
+            if v.afterTime then
+                label = _U("menu_ticket_after_info", v.id, v.fine, ((v.fine * Config.NotPaidModifier) - v.fine), v.paid)
+            end
+
+            table.insert(elements, {
+                label = label,
+                value = v
+            })
+        end
+
+        table.insert(elements, 1, {label = _U("menu_info_paid", paid, paidMoney)})
+        table.insert(elements, 2, {label = _U("menu_info_to_pay", toPay, toPayMoney)})
+
+        ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesInfoMenu", {
+            title = _U("menu_main_info"),
+            align = "center-right",
+            elements = elements,
+        }, function(data,menu)
+            if data.current.value ~= nil then
+                d = data.current.value
+                d.paid = true
+                TriggerEvent("kfines:open", true, d)
+            end
+            menu.close()
+        end, function(data,menu)
+            menu.close()
+        end)
+    end)
 end
 
 -- Spawn NPC

@@ -28,5 +28,10 @@ Locales['en'] = {
     ['menu_main_pay'] = "Pay for Tickets",
     ['menu_main_info'] = "Tickets Info",
     ['menu_ticket'] = "%s. $%s",
-    ['paid'] = "You paid %s for ticket with ID %s",
+    ['menu_ticket_after'] = "%s. $%s + $%s (AFTER TIME)",
+    ['paid'] = "You paid $%s for ticket with ID %s",
+    ['menu_info_paid'] = "Paid Tickets %s ($%s)",
+    ['menu_info_to_pay'] = "Tickets to Pay %s ($%s)",
+    ['menu_ticket_info'] = "%s. $%s (Paid: %s)",
+    ['menu_ticket_after_info'] = "%s. $%s + $%s (AFTER TIME) (Paid: %s)",
 }

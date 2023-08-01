@@ -1,6 +1,6 @@
 Config = {}
 
-Config.Locale = 'en'
+Config.Locale = 'pl'
 Config.TimeToPay = 3 * 24 * 60 * 60 * 1000
 Config.NotPaidModifier = 1.25
 Config.AllowFakePlayers = false
