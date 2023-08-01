@@ -21,7 +21,7 @@ export default class App extends Component {
         payUntil: "",
         DOBFormat: "",
         id: -1,
-        paid: false,
+        paid: false
     }
 
     render() {
@@ -224,7 +224,21 @@ export default class App extends Component {
         let data = this.state
         data.date = data.date
         data.payUntil = data.payUntil
-        data.citizenDOB = new Date(data.citizenDOB).toLocaleDateString('en-GB', { timeZone: 'UTC' })
+
+        let d = new Date(data.citizenDOB)
+
+        let year = d.getFullYear()
+        let month = d.getMonth() + 1
+        let day = d.getDate()
+
+        if (month < 10) {
+            month = "0" + month
+        }
+        if(day < 10) {
+            day = "0" + day
+        }
+
+        data.citizenDOB = this.state.DOBFormat.replace("m", month).replace("d", day).replace("y", year)
         callNui("apply", data)
     }
 
@@ -240,6 +254,24 @@ export default class App extends Component {
 
     fixDate(date) {
         let splitted = date.split("/")
-        return splitted[2] + "-" + splitted[1] + "-" + splitted[0]
+        let format = this.state.DOBFormat.split("/")
+
+        let year, month, day = ""
+
+        for (let i = 0; i < splitted.length; i++) {
+            switch (format[i]) {
+                case "d":
+                    day = splitted[i]
+                    break;
+                case "m":
+                    month = splitted[i]
+                    break;
+                case "y":
+                    year = splitted[i]
+                    break;
+            }
+        }
+
+        return year+ "-" + month + "-" + day
     }
 }
