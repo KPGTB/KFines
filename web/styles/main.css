@@ -1,5 +1,142 @@
-@import url(./app.css);
-
 * {
     margin: 0;
+}
+
+.App {
+    background-color: white;
+    border: solid 2px rgb(51, 51, 51);
+    width: 750px;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    opacity: 0.9;
+
+    padding-inline: 10px;
+    font-family: 'Inter', sans-serif;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% - 20px);
+
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    width: 42.5%;
+    justify-content: space-between;
+}
+
+.department {
+    font-weight: bold;
+    text-align: center;
+}
+
+.title {
+    font-size: .8em;
+    text-align: center;
+}
+
+.currentDate {
+    text-align: right;
+    font-size: .8em;
+}
+
+.catType {
+    font-weight: bold;
+}
+
+.category {
+    display: flex;
+    justify-content: space-between;
+}
+
+.category fieldset {
+    flex: 0 0 27.5%;
+    display: flex;
+    align-items: center;
+}
+
+.category fieldset div, .category fieldset input, .category fieldset textarea {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.category fieldset input, .category fieldset textarea {
+    text-align: left;
+}
+
+.category fieldset button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.category fieldset button.notSelected {
+    text-decoration: line-through;
+}
+
+.category fieldset button:disabled {
+    cursor: none;
+    opacity: 1;
+    color: black;
+}
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 10px;
+}
+
+footer button {
+    background-color: transparent;
+    outline: none;
+    border:none;
+    cursor: pointer;
+    font-size: 30px;
+    font-weight: bold;
+    color: rgb(51, 51, 51);
+    font-family: 'Architects Daughter', cursive;
+}
+
+footer fieldset {
+    padding: 10px;
+    text-align: right;
+    width: 50%;
+    margin-left: auto;
+}
+
+footer fieldset input {
+    text-align: center;
+    font-size: 50px;
+    font-family: 'Tangerine', cursive;
+    width: 100%;
+}
+
+input, textarea {
+    font-family: 'Architects Daughter', cursive;
+}
+
+input {
+    border-top: none;
+    border-inline: none;
+}
+
+input:focus {
+    outline: none;
+}
+
+textarea:focus {
+    outline: none;
 }

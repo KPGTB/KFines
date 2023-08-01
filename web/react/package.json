@@ -1,7 +1,7 @@
 {
-  "name": "fivem-react-template",
+  "name": "KFines",
   "version": "1.0.0",
-  "description": "A simple FiveM (Lua) + ReactJS template with some utils",
+  "description": "Simple FiveM script that adds police fines integrated with MySQL that can be paid after certain time",
   "main": "src/index.js",
   "homepage": "/",
   "scripts": {
