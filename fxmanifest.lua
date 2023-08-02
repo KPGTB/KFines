@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'KPG-TB'
-description 'Simple FiveM script that adds police fines integrated with MySQL that can be paid after certain time'
+description 'KFines is advanced Traffic Tickets system that allows creating tickets for players by cops, that can be paid later'
 version '1.0.0'
 
 ui_page 'web/build/index.html'

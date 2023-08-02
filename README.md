@@ -27,5 +27,7 @@ Locale files are located in `locales/`
 
 Documentation will be available soon [here](https://docs.kpgtb.pl/)
 
+[How to edit UI](https://github.com/KPGTB/fivem-react-template)
+
 # License
 Apache 2.0
