@@ -34,4 +34,5 @@ Locales['en'] = {
     ['menu_info_to_pay'] = "Tickets to Pay %s ($%s)",
     ['menu_ticket_info'] = "%s. $%s (Paid: %s)",
     ['menu_ticket_after_info'] = "%s. $%s + $%s (AFTER TIME) (Paid: %s)",
+    ['fill_ticket'] = "Fill every gap in ticket",
 }

@@ -78,10 +78,18 @@ end)
 
 RegisterNetEvent("kfines:apply", function(data)
 	local _source = source
+	ped = GetPlayerPed(_source)
 	xPlayer = ESX.GetPlayerFromId(_source)
-	xPlayerCoords = GetEntityCoords(GetPlayerPed(_source))
+	xPlayerCoords = GetEntityCoords(ped)
 	
 	if xPlayer.job.name ~= "police" then
+		return
+	end
+
+	if data.policeName == "" or data.policeRank == "" or data.policeBadge == "" 
+	or data.citizenName == "" or data.citizenSex == -1 or data.citizenDOB == "" 
+	or data.fine <= 0 or data.reason == "" or data.payUntil == "" or data.date == "" or data.signature == "" then
+		xPlayer.showNotification(_U("fill_ticket"))
 		return
 	end
 
@@ -129,8 +137,9 @@ RegisterNetEvent("kfines:apply", function(data)
 
 	for _,v in pairs(GetPlayers()) do
 		if Config.AllowFakePlayers then
-			dist = #(xPlayerCoords - GetEntityCoords(GetPlayerPed(v)))
-			if dist < closest and v ~= _source then
+			vPed = GetPlayerPed(v)
+			dist = #(xPlayerCoords - GetEntityCoords(vPed))
+			if dist < closest and vPed ~= ped then
 				playerToShow = v
 				closest = dist
 			end
@@ -173,6 +182,9 @@ RegisterNetEvent("kfines:apply", function(data)
 		}, function(id)
 			data.id = id
 			TriggerClientEvent("kfines:open", playerToShow, true, data)
+			if identifier == nil then
+				identifier = "Not Found"
+			end
 			CreateFineWebhook(_source, xPlayer.identifier, GetPlayerName(_source), data.policeName, identifier, data.citizenName, sex, data.citizenDOB, data.fine, data.reason, id) 
 		end
 	)
@@ -191,6 +203,11 @@ function Pay(id, auto)
 		end
 
 		identifier = result[1].citizenIdentifier
+
+		if identifier == nil then
+			return
+		end
+
 		fine = result[1].fine
 		if auto then
 			fine = fine * Config.NotPaidModifier

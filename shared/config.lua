@@ -12,4 +12,4 @@ Config.NPC = {
     ped = "s_m_y_cop_01",
     distance = 3,
 }
-Config.WebhookURL = "https://discord.com/api/webhooks/1136249036630933596/oyoHobbQMZLB8i_8eI_B-PV6patHHc4trXiutMTKnsp5OKtbaVY6Y3YHzfgE4q95IVeD?thread_id=1136248990015430656"
+Config.WebhookURL = ""

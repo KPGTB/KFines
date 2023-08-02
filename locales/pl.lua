@@ -34,4 +34,5 @@ Locales['pl'] = {
     ['menu_info_to_pay'] = "Mandaty do opłacenia %s ($%s)",
     ['menu_ticket_info'] = "%s. $%s (Opłacony: %s)",
     ['menu_ticket_after_info'] = "%s. $%s + $%s (Po czasie) (Opłacony: %s)",
+    ['fill_ticket'] = "Wypełnij każdą lukę w mandacie",
 }

@@ -106,7 +106,7 @@ export default class App extends Component {
                             completed={this.state.completed} 
                             selected={this.state.fine} 
                             name={this.state.locale.nui_input_fine} 
-                            onChange={(el) => this.setState({fine: el.target.value})} 
+                            onChange={(el) => this.setState({fine: parseInt(el.target.value)})} 
                         />
 
                         <TicketField 
