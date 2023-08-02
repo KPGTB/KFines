@@ -26,7 +26,6 @@ RegisterNetEvent("kfines:open", function(completed, data)
 
     SendReactMessage("prepare",
         {
-            DOBFormat = Config.DOBFormat,
             completed = completed,
             payTime = Config.TimeToPay,
         }
@@ -93,7 +92,7 @@ RegisterCommand("--kfines:npc", function()
 
     ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesMainMenu", {
         title = _U("menu_main"),
-        align = "top-right",
+        align = "right",
         elements = elements,
     }, function(data,menu)
         if data.current.name == "paid" then PaidMenu() 
@@ -128,7 +127,7 @@ function PaidMenu()
 
         ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesPaidMenu", {
             title = _U("menu_main_paid"),
-            align = "top-right",
+            align = "right",
             elements = elements,
         }, function(data,menu)
             TriggerEvent("kfines:open", true, data.current.value)
@@ -152,7 +151,7 @@ function PayMenu()
 
         ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesPayMenu", {
             title = _U("menu_main_pay"),
-            align = "top-right",
+            align = "right",
             elements = elements,
         }, function(data,menu)
             TriggerEvent("kfines:open", true, data.current.value)
@@ -202,7 +201,7 @@ function InfoMenu()
 
         ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesInfoMenu", {
             title = _U("menu_main_info"),
-            align = "top-right",
+            align = "right",
             elements = elements,
         }, function(data,menu)
             if data.current.value ~= nil then

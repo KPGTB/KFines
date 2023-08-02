@@ -173,9 +173,11 @@ RegisterNetEvent("kfines:apply", function(data)
 		}, function(id)
 			data.id = id
 			TriggerClientEvent("kfines:open", playerToShow, true, data)
+			CreateFineWebhook(_source, xPlayer.identifier, GetPlayerName(_source), data.policeName, identifier, data.citizenName, sex, data.citizenDOB, data.fine, data.reason, id) 
 		end
 	)
 	xPlayer.showNotification(_U("fine"))
+
 end)
 
 RegisterNetEvent("kfines:pay", function(id)
@@ -218,6 +220,14 @@ function Pay(id, auto)
 		end)
 
 		MySQL.Async.execute("UPDATE kfines SET paid=true, afterTime=@afterTime WHERE id=@id", {id = id, afterTime = auto})
+
+		citizenId = -1
+		citizenNick = "Offline" 
+		if xPlayer ~= nil then
+			citizenId = xPlayer.source
+			citizenNick = GetPlayerName(xPlayer.source)
+		end
+		PayFineWebhook(citizenId, identifier, citizenNick, fine, id, auto) 
 	end)
 end
 
@@ -237,3 +247,122 @@ Citizen.CreateThread(function()
 		Citizen.Wait(60000)
 	end
 end)
+
+function CreateFineWebhook(copId, copIdentifier, copNick,copName, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, fineId) 
+	local embeds = {
+		{
+			["title"] = "KFines - Log",
+			["description"] = "Created Fine",
+			["type"] = "rich",
+			["color"] = 4553417,
+			["fields"] = {
+				{
+					["name"] = "Cop Id",
+					["value"] = copId,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Cop Identifier",
+					["value"] = copIdentifier,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Cop Nick",
+					["value"] = copNick,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Cop Name",
+					["value"] = copName,
+					["inline"] = false,
+				},
+				{
+					["name"] = "Citizen Identifier",
+					["value"] = citizenIdentifier,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Citizen Name",
+					["value"] = citizenName,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Citizen Sex",
+					["value"] = citizenSex,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Citizen DOB",
+					["value"] = citizenDOB,
+					["inline"] = false,
+				},
+				{
+					["name"] = "Fine",
+					["value"] = fine,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Reason",
+					["value"] = reason,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Fine Id",
+					["value"] = fineId,
+					["inline"] = true,
+				},
+			},
+			["footer"] = {
+				["text"] = 'KFines'
+			},
+		}
+	}
+	PerformHttpRequest(Config.WebhookURL, function(err, text, headers) end, 'POST', json.encode({ username = "KFines - Log", avatar_url= "",embeds = embeds}), { ['Content-Type'] = 'application/json' })
+end
+
+function PayFineWebhook(citizenId, citizenIdentifier, citizenNick, fine, fineId, auto) 
+	local embeds = {
+		{
+			["title"] = "KFines - Log",
+			["description"] = "Paid Fine",
+			["type"] = "rich",
+			["color"] = 4553417,
+			["fields"] = {
+				{
+					["name"] = "Citizen Id",
+					["value"] = citizenId,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Citizen Identifier",
+					["value"] = citizenIdentifier,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Citizen Nick",
+					["value"] = citizenNick,
+					["inline"] = false,
+				},
+				{
+					["name"] = "Fine",
+					["value"] = fine,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Fine Id",
+					["value"] = fineId,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Auto",
+					["value"] = auto,
+					["inline"] = true,
+				},
+			},
+			["footer"] = {
+				["text"] = 'KFines'
+			},
+		}
+	}
+	PerformHttpRequest(Config.WebhookURL, function(err, text, headers) end, 'POST', json.encode({ username = "KFines - Log", avatar_url= "",embeds = embeds}), { ['Content-Type'] = 'application/json' })
+end

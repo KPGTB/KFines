@@ -19,7 +19,6 @@ export default class App extends Component {
         signature: "",
         date: "",
         payUntil: "",
-        DOBFormat: "",
         id: -1,
         paid: false
     }
@@ -91,9 +90,9 @@ export default class App extends Component {
                         />
 
                         <TicketField 
-                            input="date" 
+                            input="text" 
                             completed={this.state.completed} 
-                            selected={this.state.completed ? this.fixDate(this.state.citizenDOB) : ""} 
+                            selected={this.state.completed ? this.state.citizenDOB : ""} 
                             name={this.state.locale.nui_input_dob} 
                             onChange={(el) => this.setState({citizenDOB: el.target.value})} 
                         />
@@ -180,7 +179,6 @@ export default class App extends Component {
                 ready: true,
                 date: currentDate,
                 payUntil: payUntil,
-                DOBFormat: data.DOBFormat,
             })
         })
 
@@ -221,25 +219,7 @@ export default class App extends Component {
 
     apply() {
         this.exit()   
-        let data = this.state
-        data.date = data.date
-        data.payUntil = data.payUntil
-
-        let d = new Date(data.citizenDOB)
-
-        let year = d.getFullYear()
-        let month = d.getMonth() + 1
-        let day = d.getDate()
-
-        if (month < 10) {
-            month = "0" + month
-        }
-        if(day < 10) {
-            day = "0" + day
-        }
-
-        data.citizenDOB = this.state.DOBFormat.replace("m", month).replace("d", day).replace("y", year)
-        callNui("apply", data)
+        callNui("apply", this.state)
     }
 
     pay() {
@@ -250,28 +230,5 @@ export default class App extends Component {
     exit() {
         callNui("exit")
         this.setState({open: false, ready: false})
-    }
-
-    fixDate(date) {
-        let splitted = date.split("/")
-        let format = this.state.DOBFormat.split("/")
-
-        let year, month, day = ""
-
-        for (let i = 0; i < splitted.length; i++) {
-            switch (format[i]) {
-                case "d":
-                    day = splitted[i]
-                    break;
-                case "m":
-                    month = splitted[i]
-                    break;
-                case "y":
-                    year = splitted[i]
-                    break;
-            }
-        }
-
-        return year+ "-" + month + "-" + day
     }
 }
