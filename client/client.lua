@@ -86,7 +86,7 @@ RegisterCommand("--kfines:npc", function()
         {label = _U("menu_main_pay"), name = "pay"},
     }
 
-    if ESX.GetPlayerData().job.name == "police" and ESX.GetPlayerData().job.grade_name == "boss" then
+    if ESX.GetPlayerData().job.name == Config.PoliceJob and ESX.GetPlayerData().job.grade_name == "boss" then
         table.insert(elements,{label = _U("menu_main_info"), name = "info"})
     end
 

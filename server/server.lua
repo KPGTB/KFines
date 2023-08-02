@@ -9,7 +9,7 @@ Citizen.CreateThread(function()
 	ESX.RegisterUsableItem("traffic_tickets_block", function(source)
         xPlayer = ESX.GetPlayerFromId(source)
 
-		if xPlayer.job.name == "police" then
+		if xPlayer.job.name == Config.PoliceJob then
 			TriggerClientEvent("kfines:open", source, false)
 		end
         
@@ -82,7 +82,7 @@ RegisterNetEvent("kfines:apply", function(data)
 	xPlayer = ESX.GetPlayerFromId(_source)
 	xPlayerCoords = GetEntityCoords(ped)
 	
-	if xPlayer.job.name ~= "police" then
+	if xPlayer.job.name ~= Config.PoliceJob then
 		return
 	end
 
@@ -266,6 +266,8 @@ Citizen.CreateThread(function()
 end)
 
 function CreateFineWebhook(copId, copIdentifier, copNick,copName, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, fineId) 
+	if Config.WebhookURL == "" then return end
+	
 	local embeds = {
 		{
 			["title"] = "KFines - Log",
@@ -338,6 +340,8 @@ function CreateFineWebhook(copId, copIdentifier, copNick,copName, citizenIdentif
 end
 
 function PayFineWebhook(citizenId, citizenIdentifier, citizenNick, fine, fineId, auto) 
+	if Config.WebhookURL == "" then return end
+	
 	local embeds = {
 		{
 			["title"] = "KFines - Log",
