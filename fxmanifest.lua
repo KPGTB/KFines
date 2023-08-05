@@ -1,6 +1,13 @@
 local framework = 'esx' -- esx | qb
 local mysql = "mysql-async" -- mysql-async | oxmysql
 
+local langScript = "" -- don't edit
+if framework == 'esx' then
+    langScript = "@es_extended/locale.lua"
+elseif framework == 'qb' then
+    langScript = "@qb-core/shared/locale.lua"
+end
+
 fx_version 'cerulean'
 game 'gta5'
 
@@ -18,18 +25,20 @@ files {
 }
 
 client_scripts {
-    '@es_extended/locale.lua',
     'framework/'..framework..'/client.lua',
-    'locales/**.lua',
-    'client/**.lua'
+    'client/**.lua',
 }
 
 server_scripts {
-    '@es_extended/locale.lua',
     'framework/'..framework..'/server.lua',
     'locales/**.lua',
     'server/**.lua',
-    '@'..mysql..'/lib/MySQL.lua'
+    '@'..mysql..'/lib/MySQL.lua',
 }
 
-shared_script 'shared/config.lua'
+shared_scripts {
+    'framework/'..framework..'/shared.lua',
+    'shared/config.lua',
+    langScript,
+    'locales/**.lua',
+}

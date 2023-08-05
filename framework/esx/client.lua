@@ -1,5 +1,3 @@
-local ESX = exports["es_extended"]:getSharedObject()
-
 function ShowHelpNotification(msg)
     ESX.ShowHelpNotification(msg)
 end
@@ -8,17 +6,19 @@ function GetJob()
     return ESX.GetPlayerData().job.name
 end
 
-function GetGrade()
-    return ESX.GetPlayerData().job.grade_name
+function IsBoss()
+    return ESX.GetPlayerData().job.grade_name == Config.BossGrade
 end
 
-function OpenMenu(name, title, align,elements, func)
+function OpenMenu(name, title, align,elements)
     ESX.UI.Menu.Open("default", GetCurrentResourceName(), name, {
         title = title,
         align = align,
         elements = elements,
     }, function(data,menu)
-        func(data.current.name, data.current.value)
+        if data.current.event ~= nil then
+            TriggerEvent(data.current.event, data.current.args)
+        end
         menu.close()
     end, function(data,menu)
         menu.close()

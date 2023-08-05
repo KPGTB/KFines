@@ -2,9 +2,9 @@
 ![Author](https://img.shields.io/badge/Author-KPG--TB-green)
 ---
 
-![img](https://i.imgur.com/6CIKVM6.png)
+![img](https://i.imgur.com/LXGfW4c.png)
 
-# [ESX] KFines - Nice Traffic Tickets with option to pay later!
+# [ESX/QB] KFines - Nice Traffic Tickets with option to pay later!
 
 KFines is advanced Traffic Tickets system that allows creating tickets for players by cops, that can be paid later (by default, player needs to pay it in 3 days). If player don't pay ticket after configured time, script will take money with additional fee (by default 25%). 
 
@@ -12,7 +12,7 @@ KFines is advanced Traffic Tickets system that allows creating tickets for playe
 
 # Requirements
 
-- ESX 1.2 or ESX Legacy (Another frameworks will be available soon)
+- ESX 1.2, ESX Legacy or QBCore
 - [MySQL Async](https://github.com/brouznouf/fivem-mysql-async) or [oxmysql](https://forum.cfx.re/t/standalone-oxmysql-lightweight-mysql-wrapper/4755120)
 
 # Items

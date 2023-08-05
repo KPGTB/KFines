@@ -13,6 +13,7 @@ end)
 RegisterNetEvent("kfines:open", function(completed, data)
     if completed then
         SendReactMessage("setData",data)
+        Citizen.Wait(100)
     end
 
     SendReactMessage("prepare",
@@ -28,7 +29,7 @@ end)
 
 Citizen.CreateThread(function()
     Citizen.Wait(1000)
-    SendReactMessage("setLocale", Locales[Config.Locale])
+    SendReactMessage("setLocale", GetLang())
 end)
 
 RegisterNUICallback("exit", function(req,res)
@@ -65,24 +66,34 @@ Citizen.CreateThread(function()
     end
 end)
 
+RegisterNetEvent("kfines:menu:open", function(data)
+    if data.name == "paid" then PaidMenu() 
+    elseif data.name == "pay" then PayMenu() 
+    elseif data.name == "info" then InfoMenu() 
+    end
+end)
+
+RegisterNetEvent("kfines:menu:ticket", function(data)
+    if data.paid then
+        data.value.paid = true
+    end
+
+    TriggerEvent("kfines:open", data.completed, data.value)
+end)
+
 RegisterCommand("--kfines:npc", function()
     if not nearNPC then return end
 
     elements = {
-        {label = _U("menu_main_paid"), name = "paid"},
-        {label = _U("menu_main_pay"), name = "pay"},
+        {label = _U("menu_main_paid"), name = "paid", event = "kfines:menu:open", args = {name = "paid"}},
+        {label = _U("menu_main_pay"), name = "pay", event = "kfines:menu:open", args = {name = "pay"}},
     }
 
-    if GetJob() == Config.PoliceJob and GetGrade() == Config.BossGrade then
-        table.insert(elements,{label = _U("menu_main_info"), name = "info"})
+    if GetJob() == Config.PoliceJob and IsBoss() then
+        table.insert(elements,{label = _U("menu_main_info"), name = "info", event = "kfines:menu:open", args = {name = "info"}})
     end
 
-    OpenMenu("finesMainMenu", _U("menu_main"), "right", elements, function(name,value)
-        if name == "paid" then PaidMenu() 
-        elseif name == "pay" then PayMenu() 
-        elseif name == "info" then InfoMenu() 
-        end
-    end)
+    OpenMenu("finesMainMenu", _U("menu_main"), "right", elements)
 end, false)
 Citizen.CreateThread(function()
     Citizen.Wait(2000)
@@ -101,13 +112,15 @@ function PaidMenu()
             end
             table.insert(elements, {
                 label = label,
-                value = v
+                event = "kfines:menu:ticket",
+                args = {
+                    completed = true,
+                    value = v
+                }
             })
         end
 
-        OpenMenu("finesPaidMenu", _U("menu_main_paid"), "right", elements, function(name,value)
-            TriggerEvent("kfines:open", true, value)
-        end)
+        OpenMenu("finesPaidMenu", _U("menu_main_paid"), "right", elements)
     end, true)
 end
 
@@ -118,13 +131,15 @@ function PayMenu()
         for _,v in pairs(result) do
             table.insert(elements, {
                 label = _U("menu_ticket", v.id, v.fine),
-                value = v
+                event = "kfines:menu:ticket",
+                args = {
+                    completed = true,
+                    value = v
+                }
             })
         end
 
-        OpenMenu("finesPayMenu", _U("menu_main_pay"), "right", elements, function(name,value)
-            TriggerEvent("kfines:open", true, value)
-        end)
+        OpenMenu("finesPayMenu", _U("menu_main_pay"), "right", elements)
     end, false)
 end
 
@@ -158,20 +173,19 @@ function InfoMenu()
 
             table.insert(elements, {
                 label = label,
-                value = v
+                event = "kfines:menu:ticket",
+                args = {
+                    completed = true,
+                    value = v,
+                    paid = true,
+                }
             })
         end
 
         table.insert(elements, 1, {label = _U("menu_info_paid", paid, paidMoney)})
         table.insert(elements, 2, {label = _U("menu_info_to_pay", toPay, toPayMoney)})
 
-        OpenMenu("finesInfoMenu",  _U("menu_main_info"), "right", elements, function(name,value)
-            if value ~= nil then
-                d = value
-                d.paid = true
-                TriggerEvent("kfines:open", true, d)
-            end
-        end)
+        OpenMenu("finesInfoMenu",  _U("menu_main_info"), "right", elements)
     end)
 end
 

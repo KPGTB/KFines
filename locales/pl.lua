@@ -1,4 +1,4 @@
-Locales['pl'] = {
+translations = {
     ['nui_department'] = "Los Santos Police Department",
     ['nui_title'] = "Mandat Karny",
     ['nui_city'] = "City of Los Santos",
@@ -36,3 +36,13 @@ Locales['pl'] = {
     ['menu_ticket_after_info'] = "%s. $%s + $%s (Po czasie) (Opłacony: %s)",
     ['fill_ticket'] = "Wypełnij każdą lukę w mandacie",
 }
+local fileLocale = "pl"
+
+if framework == "esx" then
+    Locales[fileLocale] = translations
+elseif framework == "qb" and Config.Locale == fileLocale then
+    Lang = Locale:new({
+        phrases = translations,
+        warnOnMissing = true
+    })
+end

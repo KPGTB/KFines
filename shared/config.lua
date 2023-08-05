@@ -2,7 +2,7 @@ Config = {}
 
 Config.Locale = 'en'
 Config.PoliceJob = 'police'
-Config.BossGrade = "boss"
+Config.BossGrade = "boss" -- Only ESX
 Config.TimeToPay = 3 * 24 * 60 * 60 * 1000 -- Milliseconds
 Config.NotPaidModifier = 1.25
 Config.AllowFakePlayers = false -- Allow cops to create ticket for player that doesn't exist in database (support for Fake ID)

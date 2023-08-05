@@ -1,5 +1,3 @@
-local ESX = exports["es_extended"]:getSharedObject()
-
 function RegisterUsableItem(item, func)
     ESX.RegisterUsableItem(item, func)
 end

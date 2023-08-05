@@ -135,7 +135,7 @@ RegisterNetEvent("kfines:apply", function(data)
 
 	MySQL.Async.insert("INSERT INTO kfines(copIdentifier, copName, copRank, copBadge, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, date, payUntil, signature) VALUES (@copIdentifier, @copName, @copRank, @copBadge, @citizenIdentifier, @citizenName, @citizenSex, @citizenDOB, @fine, @reason, CONVERT_TZ(@date, '+00:00', @tz), CONVERT_TZ(@payUntil, '+00:00', @tz), @signature)",
 		{
-			copIdentifier = xPlayer.identifier,
+			copIdentifier = GetIdentifiter(_source),
 			copName = data.policeName,
 			copRank = data.policeRank,
 			copBadge = data.policeBadge,
@@ -187,13 +187,13 @@ function Pay(id, auto)
 		citizenNick = "Offline" 
 		RemoveMoney(identifier, "bank", fine, id)
 		if IsOnline(identifier) then
-			ShowNotification(GetSourceFromIdentifier(identifier), _U("paid", fine, id))
 			citizenId = GetSourceFromIdentifier(identifier)
 			citizenNick = GetPlayerName(citizenId)
+			ShowNotification(citizenId, _U("paid", fine, id))
 		end
 
-		AddSocietyMoney('society_police', fine)
 
+		AddSocietyMoney('society_police', fine)
 		MySQL.Async.execute("UPDATE kfines SET paid=true, afterTime=@afterTime WHERE id=@id", {id = id, afterTime = auto})
 		PayFineWebhook(citizenId, identifier, citizenNick, fine, id, auto) 
 	end)
