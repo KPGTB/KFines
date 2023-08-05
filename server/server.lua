@@ -1,95 +1,81 @@
-ESX = nil
-
-Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-		Citizen.Wait(0)
+RegisterUsableItem("traffic_tickets_block", function(source)
+	if GetJob(source) == Config.PoliceJob then
+		TriggerClientEvent("kfines:open", source, false)
 	end
+end)
 
-	ESX.RegisterUsableItem("traffic_tickets_block", function(source)
-        xPlayer = ESX.GetPlayerFromId(source)
+RegisterServerCallback("traffic_tickets_get", function(source, cb, paid)
+	identifier = GetIdentifiter(source)
 
-		if xPlayer.job.name == Config.PoliceJob then
-			TriggerClientEvent("kfines:open", source, false)
+	MySQL.Async.fetchAll("SELECT * FROM kfines WHERE citizenIdentifier=@identifier AND paid=@paid", {identifier = identifier, paid = paid}, function(result)
+		
+		elements = {}
+
+		for _,v in pairs(result) do
+			table.insert(elements, {
+				id = v.id,
+				policeName = v.copName,
+				policeRank = v.copRank,
+				policeBadge = v.copBadge,
+				signature = v.signature,
+				citizenName = v.citizenName,
+				citizenDOB = v.citizenDOB,
+				citizenSex = v.citizenSex,
+				fine = v.fine,
+				reason = v.reason,
+				date = v.date,
+				payUntil = v.payUntil,
+				paid = v.paid,
+				afterTime = v.afterTime,
+			})
 		end
-        
-    end)
 
-	ESX.RegisterServerCallback("traffic_tickets_get", function(source, cb, paid)
-		xPlayer = ESX.GetPlayerFromId(source)
-		identifier = xPlayer.identifier
-
-		MySQL.Async.fetchAll("SELECT * FROM kfines WHERE citizenIdentifier=@identifier AND paid=@paid", {identifier = identifier, paid = paid}, function(result)
-			
-			elements = {}
-
-			for _,v in pairs(result) do
-				table.insert(elements, {
-					id = v.id,
-					policeName = v.copName,
-					policeRank = v.copRank,
-					policeBadge = v.copBadge,
-					signature = v.signature,
-					citizenName = v.citizenName,
-					citizenDOB = v.citizenDOB,
-					citizenSex = v.citizenSex,
-					fine = v.fine,
-					reason = v.reason,
-					date = v.date,
-					payUntil = v.payUntil,
-					paid = v.paid,
-					afterTime = v.afterTime,
-				})
-			end
-
-			cb(elements)
-		end)
+		cb(elements)
 	end)
+end)
 
-	ESX.RegisterServerCallback("traffic_tickets_get_all", function(source, cb)
+RegisterServerCallback("traffic_tickets_get_all", function(source, cb)
 
-		MySQL.Async.fetchAll("SELECT * FROM kfines", {}, function(result)
-			
-			elements = {}
+	MySQL.Async.fetchAll("SELECT * FROM kfines", {}, function(result)
+		
+		elements = {}
 
-			for _,v in pairs(result) do
-				table.insert(elements, {
-					id = v.id,
-					policeName = v.copName,
-					policeRank = v.copRank,
-					policeBadge = v.copBadge,
-					signature = v.signature,
-					citizenName = v.citizenName,
-					citizenDOB = v.citizenDOB,
-					citizenSex = v.citizenSex,
-					fine = v.fine,
-					reason = v.reason,
-					date = v.date,
-					payUntil = v.payUntil,
-					paid = v.paid,
-					afterTime = v.afterTime,
-				})
-			end
+		for _,v in pairs(result) do
+			table.insert(elements, {
+				id = v.id,
+				policeName = v.copName,
+				policeRank = v.copRank,
+				policeBadge = v.copBadge,
+				signature = v.signature,
+				citizenName = v.citizenName,
+				citizenDOB = v.citizenDOB,
+				citizenSex = v.citizenSex,
+				fine = v.fine,
+				reason = v.reason,
+				date = v.date,
+				payUntil = v.payUntil,
+				paid = v.paid,
+				afterTime = v.afterTime,
+			})
+		end
 
-			cb(elements)
-		end)
+		cb(elements)
 	end)
 end)
 
 RegisterNetEvent("kfines:apply", function(data)
 	local _source = source
 	ped = GetPlayerPed(_source)
-	xPlayer = ESX.GetPlayerFromId(_source)
 	xPlayerCoords = GetEntityCoords(ped)
 	
-	if xPlayer.job.name ~= Config.PoliceJob then
+	if GetJob(_source) ~= Config.PoliceJob then
 		return
 	end
 
 	if data.policeName == "" or data.policeRank == "" or data.policeBadge == "" 
 	or data.citizenName == "" or data.citizenSex == -1 or data.citizenDOB == "" 
 	or data.fine <= 0 or data.reason == "" or data.payUntil == "" or data.date == "" or data.signature == "" then
-		xPlayer.showNotification(_U("fill_ticket"))
+		ShowNotification(_source,_U("fill_ticket"))
 		return
 	end
 
@@ -109,26 +95,10 @@ RegisterNetEvent("kfines:apply", function(data)
 		end
 	 end
 
-	identifier = nil
-	finished = false
-
-	MySQL.Async.fetchAll(
-		"SELECT * FROM users WHERE firstname=@first AND lastname=@last AND dateofbirth=@dob AND sex=@sex",
-		{first = name, last = surname, dob = data.citizenDOB, sex = sex},
-		function(result)
-			if result[1] ~= nil then
-				identifier = result[1].identifier
-			end
-			finished = true
-		end
-	)
-
-	while not finished do
-		Citizen.Wait(50)
-	end
+	identifier = GetIdentifierFromData(name,surname,data.citizenDOB,sex)
 
 	if identifier == nil and not Config.AllowFakePlayers then
-		xPlayer.showNotification(_U("not_found"))
+		ShowNotification(_source, _U("not_found"))
 		return
 	end
 
@@ -144,7 +114,7 @@ RegisterNetEvent("kfines:apply", function(data)
 				closest = dist
 			end
 		else
-			if identifier == ESX.GetPlayerFromId(v).identifier then
+			if identifier == GetIdentifiter(v) then
 				dist = #(xPlayerCoords - GetEntityCoords(GetPlayerPed(v)))
 				if dist < closest then 
 					playerToShow = v
@@ -155,7 +125,7 @@ RegisterNetEvent("kfines:apply", function(data)
 	end
 
 	if playerToShow == nil then
-		xPlayer.showNotification(_U("not_found"))
+		ShowNotification(_source, _U("not_found"))
 		return
 	end
 
@@ -185,10 +155,10 @@ RegisterNetEvent("kfines:apply", function(data)
 			if identifier == nil then
 				identifier = "Not Found"
 			end
-			CreateFineWebhook(_source, xPlayer.identifier, GetPlayerName(_source), data.policeName, identifier, data.citizenName, sex, data.citizenDOB, data.fine, data.reason, id) 
+			CreateFineWebhook(_source, GetIdentifiter(_source), GetPlayerName(_source), data.policeName, identifier, data.citizenName, sex, data.citizenDOB, data.fine, data.reason, id) 
 		end
 	)
-	xPlayer.showNotification(_U("fine"))
+	ShowNotification(_source, _U("fine"))
 
 end)
 
@@ -213,37 +183,18 @@ function Pay(id, auto)
 			fine = fine * Config.NotPaidModifier
 		end
 
-		xPlayer = ESX.GetPlayerFromIdentifier(identifier)
-		if xPlayer ~= nil then
-			xPlayer.removeAccountMoney("bank", fine)
-			xPlayer.showNotification(_U("paid", fine, id))
-		else
-			MySQL.Async.fetchAll('SELECT accounts FROM users WHERE identifier = @identifier', {identifier = identifier }, function(result)
-				if result[1] ~= nil then
-					local accounts = json.decode(result[1].accounts)
-					accounts.bank = accounts.bank - fine
-					MySQL.Async.execute("UPDATE users SET accounts = @accounts WHERE identifier = @identifier",
-						{
-						identifier = identifier,
-						accounts = json.encode(accounts)
-						}
-					)
-				end
-			end)
-		end
-
-		TriggerEvent('esx_addonaccount:getSharedAccount', 'society_police', function(account)
-			account.addMoney(fine)
-		end)
-
-		MySQL.Async.execute("UPDATE kfines SET paid=true, afterTime=@afterTime WHERE id=@id", {id = id, afterTime = auto})
-
 		citizenId = -1
 		citizenNick = "Offline" 
-		if xPlayer ~= nil then
-			citizenId = xPlayer.source
-			citizenNick = GetPlayerName(xPlayer.source)
+		RemoveMoney(identifier, "bank", fine, id)
+		if IsOnline(identifier) then
+			ShowNotification(GetSourceFromIdentifier(identifier), _U("paid", fine, id))
+			citizenId = GetSourceFromIdentifier(identifier)
+			citizenNick = GetPlayerName(citizenId)
 		end
+
+		AddSocietyMoney('society_police', fine)
+
+		MySQL.Async.execute("UPDATE kfines SET paid=true, afterTime=@afterTime WHERE id=@id", {id = id, afterTime = auto})
 		PayFineWebhook(citizenId, identifier, citizenNick, fine, id, auto) 
 	end)
 end

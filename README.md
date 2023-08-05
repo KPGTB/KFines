@@ -10,8 +10,8 @@ KFines is advanced Traffic Tickets system that allows creating tickets for playe
 
 # Requirements
 
-- ESX 1.2 (Another frameworks will be available soon)
-- [MySQL Async](https://github.com/brouznouf/fivem-mysql-async)
+- ESX 1.2 or ESX Legacy (Another frameworks will be available soon)
+- [MySQL Async](https://github.com/brouznouf/fivem-mysql-async) or [oxmysql](https://forum.cfx.re/t/standalone-oxmysql-lightweight-mysql-wrapper/4755120)
 
 # Items
 
@@ -22,6 +22,8 @@ To create tickets, player needs to have police job and use item `traffic_tickets
 Configuration file is located in `shared/config.lua`
 
 Locale files are located in `locales/`
+
+Please configure your framework and mysql type in `fxmanifest.lua`
 
 # Documentation
 

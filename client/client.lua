@@ -1,12 +1,3 @@
-ESX = nil
-
-Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-		Citizen.Wait(0)
-	end
-end)
-
 -- NUI
 
 RegisterNUICallback("pay", function(id,cb)
@@ -32,7 +23,7 @@ RegisterNetEvent("kfines:open", function(completed, data)
     )
     SetReactVisible(true)
     SetNuiFocus(true, true)
-    ESX.UI.Menu.CloseAll()
+    CloseMenus()
 end)
 
 Citizen.CreateThread(function()
@@ -50,11 +41,7 @@ end)
 
 local nearNPC = false
 
-Citizen.CreateThread(function()
-    while ESX == nil do
-        Citizen.Wait(100)
-    end
-    
+Citizen.CreateThread(function()    
     while true do
         ped = PlayerPedId()
         distance = #(GetEntityCoords(ped) - Config.NPC.pos)
@@ -72,7 +59,7 @@ end)
 Citizen.CreateThread(function()
     while true do
         if nearNPC then
-            ESX.ShowHelpNotification(_U('npc_notify'))
+            ShowHelpNotification(_U('npc_notify'))
         end
         Citizen.Wait(50)
     end
@@ -86,22 +73,15 @@ RegisterCommand("--kfines:npc", function()
         {label = _U("menu_main_pay"), name = "pay"},
     }
 
-    if ESX.GetPlayerData().job.name == Config.PoliceJob and ESX.GetPlayerData().job.grade_name == "boss" then
+    if GetJob() == Config.PoliceJob and GetGrade() == Config.BossGrade then
         table.insert(elements,{label = _U("menu_main_info"), name = "info"})
     end
 
-    ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesMainMenu", {
-        title = _U("menu_main"),
-        align = "right",
-        elements = elements,
-    }, function(data,menu)
-        if data.current.name == "paid" then PaidMenu() 
-        elseif data.current.name == "pay" then PayMenu() 
-        elseif data.current.name == "info" then InfoMenu() 
+    OpenMenu("finesMainMenu", _U("menu_main"), "right", elements, function(name,value)
+        if name == "paid" then PaidMenu() 
+        elseif name == "pay" then PayMenu() 
+        elseif name == "info" then InfoMenu() 
         end
-        menu.close()
-    end, function(data,menu)
-        menu.close()
     end)
 end, false)
 Citizen.CreateThread(function()
@@ -113,7 +93,7 @@ end)
 function PaidMenu()
     local elements = {}
 
-    ESX.TriggerServerCallback("traffic_tickets_get", function(result)
+    TriggerServerCallback("traffic_tickets_get", function(result)
         for _,v in pairs(result) do
             label = _U("menu_ticket", v.id, v.fine)
             if v.afterTime then
@@ -125,15 +105,8 @@ function PaidMenu()
             })
         end
 
-        ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesPaidMenu", {
-            title = _U("menu_main_paid"),
-            align = "right",
-            elements = elements,
-        }, function(data,menu)
-            TriggerEvent("kfines:open", true, data.current.value)
-            menu.close()
-        end, function(data,menu)
-            menu.close()
+        OpenMenu("finesPaidMenu", _U("menu_main_paid"), "right", elements, function(name,value)
+            TriggerEvent("kfines:open", true, value)
         end)
     end, true)
 end
@@ -141,7 +114,7 @@ end
 function PayMenu()
     local elements = {}
 
-    ESX.TriggerServerCallback("traffic_tickets_get", function(result)
+    TriggerServerCallback("traffic_tickets_get", function(result)
         for _,v in pairs(result) do
             table.insert(elements, {
                 label = _U("menu_ticket", v.id, v.fine),
@@ -149,15 +122,8 @@ function PayMenu()
             })
         end
 
-        ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesPayMenu", {
-            title = _U("menu_main_pay"),
-            align = "right",
-            elements = elements,
-        }, function(data,menu)
-            TriggerEvent("kfines:open", true, data.current.value)
-            menu.close()
-        end, function(data,menu)
-            menu.close()
+        OpenMenu("finesPayMenu", _U("menu_main_pay"), "right", elements, function(name,value)
+            TriggerEvent("kfines:open", true, value)
         end)
     end, false)
 end
@@ -165,7 +131,7 @@ end
 function InfoMenu()
     local elements = {}
 
-    ESX.TriggerServerCallback("traffic_tickets_get_all", function(result)
+    TriggerServerCallback("traffic_tickets_get_all", function(result)
         paid = 0
         toPay = 0
 
@@ -199,19 +165,12 @@ function InfoMenu()
         table.insert(elements, 1, {label = _U("menu_info_paid", paid, paidMoney)})
         table.insert(elements, 2, {label = _U("menu_info_to_pay", toPay, toPayMoney)})
 
-        ESX.UI.Menu.Open("default", GetCurrentResourceName(), "finesInfoMenu", {
-            title = _U("menu_main_info"),
-            align = "right",
-            elements = elements,
-        }, function(data,menu)
-            if data.current.value ~= nil then
-                d = data.current.value
+        OpenMenu("finesInfoMenu",  _U("menu_main_info"), "right", elements, function(name,value)
+            if value ~= nil then
+                d = value
                 d.paid = true
                 TriggerEvent("kfines:open", true, d)
             end
-            menu.close()
-        end, function(data,menu)
-            menu.close()
         end)
     end)
 end

@@ -1,3 +1,6 @@
+local framework = 'esx' -- esx | qb
+local mysql = "mysql-async" -- mysql-async | oxmysql
+
 fx_version 'cerulean'
 game 'gta5'
 
@@ -16,15 +19,17 @@ files {
 
 client_scripts {
     '@es_extended/locale.lua',
+    'framework/'..framework..'/client.lua',
     'locales/**.lua',
     'client/**.lua'
 }
 
 server_scripts {
     '@es_extended/locale.lua',
+    'framework/'..framework..'/server.lua',
     'locales/**.lua',
     'server/**.lua',
-    '@mysql-async/lib/MySQL.lua'
+    '@'..mysql..'/lib/MySQL.lua'
 }
 
 shared_script 'shared/config.lua'
