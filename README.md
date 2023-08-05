@@ -8,6 +8,8 @@
 
 KFines is advanced Traffic Tickets system that allows creating tickets for players by cops, that can be paid later (by default, player needs to pay it in 3 days). If player don't pay ticket after configured time, script will take money with additional fee (by default 25%). 
 
+[Preview](https://www.youtube.com/watch?v=ZU05HcPkEu8&ab_channel=KPG-TB)
+
 # Requirements
 
 - ESX 1.2 or ESX Legacy (Another frameworks will be available soon)
