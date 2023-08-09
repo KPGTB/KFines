@@ -60,7 +60,12 @@ end
 
 function AddSocietyMoney(society, money)
     TriggerEvent('esx_addonaccount:getSharedAccount', society, function(account)
-        account.addMoney(money)
+        if account == nil then
+            Citizen.Wait(100)
+            AddSocietyMoney(society, money)
+        else
+            account.addMoney(money)
+        end
     end)
 end
 
