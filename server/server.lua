@@ -201,18 +201,18 @@ end
 
 Citizen.CreateThread(function()
     MySQL.ready(function()
-        MySQL.Async.execute("CREATE TABLE IF NOT EXISTS `kfines` (`id` INT NOT NULL AUTO_INCREMENT , `copIdentifier` TEXT NOT NULL, `copName` TEXT NOT NULL, `copRank` TEXT NOT NULL, `copBadge` TEXT NOT NULL, `citizenIdentifier` TEXT NULL, `citizenName` TEXT NOT NULL,`citizenSex` INT NOT NULL,`citizenDOB` TEXT NOT NULL, `fine` INT NOT NULL, `reason` TEXT NOT NULL, `date` TIMESTAMP NOT NULL, `payUntil` TIMESTAMP NOT NULL, `signature` TEXT NOT NULL, `paid` BOOLEAN NOT NULL DEFAULT FALSE, `afterTime` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`)) ENGINE = InnoDB;")
+        MySQL.Async.execute("CREATE TABLE IF NOT EXISTS `kfines` (`id` INT NOT NULL AUTO_INCREMENT , `copIdentifier` TEXT NOT NULL , `copName` TEXT NOT NULL , `copRank` TEXT NOT NULL , `copBadge` TEXT NOT NULL , `citizenIdentifier` TEXT NULL , `citizenName` TEXT NOT NULL ,`citizenSex` INT NOT NULL DEFAULT -1,`citizenDOB` TEXT NOT NULL , `fine` INT NOT NULL DEFAULT 0, `reason` TEXT NOT NULL , `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `payUntil` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `signature` TEXT NOT NULL , `paid` BOOLEAN NOT NULL DEFAULT FALSE, `afterTime` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`)) ENGINE = InnoDB;")
     end)
 end)
 
 Citizen.CreateThread(function()
 	while true do
+		Citizen.Wait(60000)
 		MySQL.Async.fetchAll("SELECT id FROM `kfines` WHERE payUntil < CONVERT_TZ(NOW(), '+00:00', @tz) AND paid=false", {tz = Config.TimeZone}, function(result)
 			for _,v in pairs(result) do
 				Pay(v.id, true)
 			end
 		end)
-		Citizen.Wait(60000)
 	end
 end)
 
