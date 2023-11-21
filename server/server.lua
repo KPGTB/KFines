@@ -3,12 +3,11 @@ RegisterUsableItem("traffic_tickets_block", function(source)
 
 	for k,v in pairs(Config.Jobs) do
 		for _,v2 in pairs(v.allowedJobs) do
-			if GetJob(source) == v2 then
+			if GetJob(source) == v2.job then
 				job = k
 			end
 		end
     end
-
 
 	if job then
 		TriggerClientEvent("kfines:open", source, false, {job = job})
@@ -72,7 +71,7 @@ RegisterNetEvent("kfines:apply", function(data)
 	correct = false
 
 	for _,v in pairs(Config.Jobs[data.job].allowedJobs) do
-		if GetJob(_source) == v then
+		if GetJob(_source) == v.job then
 			correct = true
 		end
 	end

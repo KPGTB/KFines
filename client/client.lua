@@ -48,12 +48,14 @@ Citizen.CreateThread(function()
     while true do
         ped = PlayerPedId()
         for k,v in pairs(Config.Jobs) do
-            distance = #(GetEntityCoords(ped) - v.npc.pos)
+            for _,v2 in pairs(v.npcs) do
+                distance = #(GetEntityCoords(ped) - v2.pos)
 
-            if distance < v.npc.distance then
-                nearNPC = k
-            elseif nearNPC == k then
-                nearNPC = false
+                if distance < v2.distance then
+                    nearNPC = k
+                elseif nearNPC == k then
+                    nearNPC = false
+                end
             end
         end
 
@@ -101,7 +103,7 @@ RegisterCommand("--kfines:npc", function()
     correct = false
 
     for _,v in pairs(Config.Jobs[nearNPC].allowedJobs) do
-        if v.job == job and isBoss(job, v.grade) then
+        if v.job == job and IsBoss(job, v.grade) then
             correct = true
         end
     end
@@ -164,7 +166,7 @@ function PayMenu(job)
     end, false)
 end
 
-function InfoMenu()
+function InfoMenu(job)
     local elements = {}
 
     TriggerServerCallback("traffic_tickets_get_all", function(result)
@@ -215,20 +217,22 @@ end
 -- Spawn NPC
 Citizen.CreateThread(function()
     for _,v in pairs(Config.Jobs) do
-        hash = v.npc.ped
-        pos = v.npc.pos
-        heading = v.npc.heading
+        for _,v2 in pairs(v.npcs) do
+            hash = v2.ped
+            pos = v2.pos
+            heading = v2.heading
 
-        RequestModel(hash)
-        while not HasModelLoaded(hash) do Citizen.Wait(1) end
+            RequestModel(hash)
+            while not HasModelLoaded(hash) do Citizen.Wait(1) end
 
-        local ped = CreatePed(1, hash, pos.x, pos.y, pos.z-1, heading, false, true)
+            local ped = CreatePed(1, hash, pos.x, pos.y, pos.z-1, heading, false, true)
 
-        SetPedCombatAttributes(ped, 46, true)                     
-        SetPedFleeAttributes(ped, 0, 0)                      
-        SetBlockingOfNonTemporaryEvents(ped, true)
-        SetEntityAsMissionEntity(ped, true, true)
-        SetEntityInvincible(ped, true)
-        FreezeEntityPosition(ped, true)
+            SetPedCombatAttributes(ped, 46, true)                     
+            SetPedFleeAttributes(ped, 0, 0)                      
+            SetBlockingOfNonTemporaryEvents(ped, true)
+            SetEntityAsMissionEntity(ped, true, true)
+            SetEntityInvincible(ped, true)
+            FreezeEntityPosition(ped, true)
+        end
     end
 end)
