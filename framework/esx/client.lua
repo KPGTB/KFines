@@ -6,8 +6,8 @@ function GetJob()
     return ESX.GetPlayerData().job.name
 end
 
-function IsBoss()
-    return ESX.GetPlayerData().job.grade_name == Config.BossGrade
+function IsBoss(job,grade)
+    return ESX.GetPlayerData().job.grade_name == grade
 end
 
 function OpenMenu(name, title, align,elements)

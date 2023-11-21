@@ -8,7 +8,7 @@ function GetJob()
     return QBCore.Functions.GetPlayerData().job.name
 end
 
-function IsBoss()
+function IsBoss(job,grade)
     return QBCore.Functions.GetPlayerData().job.isboss
 end
 

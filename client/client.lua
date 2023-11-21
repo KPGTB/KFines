@@ -20,6 +20,8 @@ RegisterNetEvent("kfines:open", function(completed, data)
         {
             completed = completed,
             payTime = Config.TimeToPay,
+            job = data.job,
+            jobInfo = Config.Jobs[data.job]
         }
     )
     SetReactVisible(true)
@@ -45,13 +47,19 @@ local nearNPC = false
 Citizen.CreateThread(function()    
     while true do
         ped = PlayerPedId()
-        distance = #(GetEntityCoords(ped) - Config.NPC.pos)
+        for k,v in pairs(Config.Jobs) do
+            distance = #(GetEntityCoords(ped) - v.npc.pos)
 
-        if distance < Config.NPC.distance then
-            nearNPC = true
+            if distance < v.npc.distance then
+                nearNPC = k
+            elseif nearNPC == k then
+                nearNPC = false
+            end
+        end
+
+        if nearNPC then
             Citizen.Wait(2000)
         else
-            nearNPC = false
             Citizen.Wait(100)
         end
     end
@@ -67,9 +75,9 @@ Citizen.CreateThread(function()
 end)
 
 RegisterNetEvent("kfines:menu:open", function(data)
-    if data.name == "paid" then PaidMenu() 
-    elseif data.name == "pay" then PayMenu() 
-    elseif data.name == "info" then InfoMenu() 
+    if data.name == "paid" then PaidMenu(data.job) 
+    elseif data.name == "pay" then PayMenu(data.job) 
+    elseif data.name == "info" then InfoMenu(data.job) 
     end
 end)
 
@@ -85,12 +93,21 @@ RegisterCommand("--kfines:npc", function()
     if not nearNPC then return end
 
     elements = {
-        {label = _U("menu_main_paid"), name = "paid", event = "kfines:menu:open", args = {name = "paid"}},
-        {label = _U("menu_main_pay"), name = "pay", event = "kfines:menu:open", args = {name = "pay"}},
+        {label = _U("menu_main_paid"), name = "paid", event = "kfines:menu:open", args = {name = "paid", job = nearNPC}},
+        {label = _U("menu_main_pay"), name = "pay", event = "kfines:menu:open", args = {name = "pay", job = nearNPC}},
     }
 
-    if GetJob() == Config.PoliceJob and IsBoss() then
-        table.insert(elements,{label = _U("menu_main_info"), name = "info", event = "kfines:menu:open", args = {name = "info"}})
+    job = GetJob()
+    correct = false
+
+    for _,v in pairs(Config.Jobs[nearNPC].allowedJobs) do
+        if v.job == job and isBoss(job, v.grade) then
+            correct = true
+        end
+    end
+
+    if correct then
+        table.insert(elements,{label = _U("menu_main_info"), name = "info", event = "kfines:menu:open", args = {name = "info", job = nearNPC}})
     end
 
     OpenMenu("finesMainMenu", _U("menu_main"), "right", elements)
@@ -101,42 +118,46 @@ Citizen.CreateThread(function()
     TriggerEvent('chat:removeSuggestion', '/--kfines:npc')
 end)
 
-function PaidMenu()
+function PaidMenu(job)
     local elements = {}
 
     TriggerServerCallback("traffic_tickets_get", function(result)
         for _,v in pairs(result) do
-            label = _U("menu_ticket", v.id, v.fine)
-            if v.afterTime then
-                label = _U("menu_ticket_after", v.id, v.fine, ((v.fine * Config.NotPaidModifier) - v.fine))
+            if v.job == job then
+                label = _U("menu_ticket", v.id, v.fine)
+                if v.afterTime then
+                    label = _U("menu_ticket_after", v.id, v.fine, ((v.fine * Config.NotPaidModifier) - v.fine))
+                end
+                table.insert(elements, {
+                    label = label,
+                    event = "kfines:menu:ticket",
+                    args = {
+                        completed = true,
+                        value = v
+                    }
+                })
             end
-            table.insert(elements, {
-                label = label,
-                event = "kfines:menu:ticket",
-                args = {
-                    completed = true,
-                    value = v
-                }
-            })
         end
 
         OpenMenu("finesPaidMenu", _U("menu_main_paid"), "right", elements)
     end, true)
 end
 
-function PayMenu()
+function PayMenu(job)
     local elements = {}
 
     TriggerServerCallback("traffic_tickets_get", function(result)
         for _,v in pairs(result) do
-            table.insert(elements, {
-                label = _U("menu_ticket", v.id, v.fine),
-                event = "kfines:menu:ticket",
-                args = {
-                    completed = true,
-                    value = v
-                }
-            })
+            if v.job == job then
+                table.insert(elements, {
+                    label = _U("menu_ticket", v.id, v.fine),
+                    event = "kfines:menu:ticket",
+                    args = {
+                        completed = true,
+                        value = v
+                    }
+                })
+            end
         end
 
         OpenMenu("finesPayMenu", _U("menu_main_pay"), "right", elements)
@@ -154,32 +175,34 @@ function InfoMenu()
         toPayMoney = 0
 
         for _,v in pairs(result) do
-            if v.paid then
-                paid = paid + 1
-                if v.afterTime then
-                    paidMoney = paidMoney + (Config.NotPaidModifier * v.fine)
+            if v.job == job then
+                if v.paid then
+                    paid = paid + 1
+                    if v.afterTime then
+                        paidMoney = paidMoney + (Config.NotPaidModifier * v.fine)
+                    else
+                        paidMoney = paidMoney + v.fine
+                    end
                 else
-                    paidMoney = paidMoney + v.fine
+                    toPay = toPay + 1
+                    toPayMoney = toPayMoney + v.fine
                 end
-            else
-                toPay = toPay + 1
-                toPayMoney = toPayMoney + v.fine
-            end
 
-            label = _U("menu_ticket_info", v.id, v.fine, v.paid)
-            if v.afterTime then
-                label = _U("menu_ticket_after_info", v.id, v.fine, ((v.fine * Config.NotPaidModifier) - v.fine), v.paid)
-            end
+                label = _U("menu_ticket_info", v.id, v.fine, v.paid)
+                if v.afterTime then
+                    label = _U("menu_ticket_after_info", v.id, v.fine, ((v.fine * Config.NotPaidModifier) - v.fine), v.paid)
+                end
 
-            table.insert(elements, {
-                label = label,
-                event = "kfines:menu:ticket",
-                args = {
-                    completed = true,
-                    value = v,
-                    paid = true,
-                }
-            })
+                table.insert(elements, {
+                    label = label,
+                    event = "kfines:menu:ticket",
+                    args = {
+                        completed = true,
+                        value = v,
+                        paid = true,
+                    }
+                })
+            end
         end
 
         table.insert(elements, 1, {label = _U("menu_info_paid", paid, paidMoney)})
@@ -191,20 +214,21 @@ end
 
 -- Spawn NPC
 Citizen.CreateThread(function()
+    for _,v in pairs(Config.Jobs) do
+        hash = v.npc.ped
+        pos = v.npc.pos
+        heading = v.npc.heading
 
-    hash = Config.NPC.ped
-    pos = Config.NPC.pos
-    heading = Config.NPC.heading
+        RequestModel(hash)
+        while not HasModelLoaded(hash) do Citizen.Wait(1) end
 
-    RequestModel(hash)
-    while not HasModelLoaded(hash) do Citizen.Wait(1) end
+        local ped = CreatePed(1, hash, pos.x, pos.y, pos.z-1, heading, false, true)
 
-    local ped = CreatePed(1, hash, pos.x, pos.y, pos.z-1, heading, false, true)
-
-    SetPedCombatAttributes(ped, 46, true)                     
-    SetPedFleeAttributes(ped, 0, 0)                      
-    SetBlockingOfNonTemporaryEvents(ped, true)
-    SetEntityAsMissionEntity(ped, true, true)
-    SetEntityInvincible(ped, true)
-    FreezeEntityPosition(ped, true)
+        SetPedCombatAttributes(ped, 46, true)                     
+        SetPedFleeAttributes(ped, 0, 0)                      
+        SetBlockingOfNonTemporaryEvents(ped, true)
+        SetEntityAsMissionEntity(ped, true, true)
+        SetEntityInvincible(ped, true)
+        FreezeEntityPosition(ped, true)
+    end
 end)

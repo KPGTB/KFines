@@ -1,6 +1,17 @@
 RegisterUsableItem("traffic_tickets_block", function(source)
-	if GetJob(source) == Config.PoliceJob then
-		TriggerClientEvent("kfines:open", source, false)
+	job = false
+
+	for k,v in pairs(Config.Jobs) do
+		for _,v2 in pairs(v.allowedJobs) do
+			if GetJob(source) == v2 then
+				job = k
+			end
+		end
+    end
+
+
+	if job then
+		TriggerClientEvent("kfines:open", source, false, {job = job})
 	end
 end)
 
@@ -12,22 +23,7 @@ RegisterServerCallback("traffic_tickets_get", function(source, cb, paid)
 		elements = {}
 
 		for _,v in pairs(result) do
-			table.insert(elements, {
-				id = v.id,
-				policeName = v.copName,
-				policeRank = v.copRank,
-				policeBadge = v.copBadge,
-				signature = v.signature,
-				citizenName = v.citizenName,
-				citizenDOB = v.citizenDOB,
-				citizenSex = v.citizenSex,
-				fine = v.fine,
-				reason = v.reason,
-				date = v.date,
-				payUntil = v.payUntil,
-				paid = v.paid,
-				afterTime = v.afterTime,
-			})
+			AddResultToTable(elements,v)
 		end
 
 		cb(elements)
@@ -41,34 +37,47 @@ RegisterServerCallback("traffic_tickets_get_all", function(source, cb)
 		elements = {}
 
 		for _,v in pairs(result) do
-			table.insert(elements, {
-				id = v.id,
-				policeName = v.copName,
-				policeRank = v.copRank,
-				policeBadge = v.copBadge,
-				signature = v.signature,
-				citizenName = v.citizenName,
-				citizenDOB = v.citizenDOB,
-				citizenSex = v.citizenSex,
-				fine = v.fine,
-				reason = v.reason,
-				date = v.date,
-				payUntil = v.payUntil,
-				paid = v.paid,
-				afterTime = v.afterTime,
-			})
+			AddResultToTable(elements,v)
 		end
 
 		cb(elements)
 	end)
 end)
 
+function AddResultToTable(targetTable,result)
+	table.insert(targetTable, {
+		id = result.id,
+		policeName = result.copName,
+		policeRank = result.copRank,
+		policeBadge = result.copBadge,
+		signature = result.signature,
+		citizenName = result.citizenName,
+		citizenDOB = result.citizenDOB,
+		citizenSex = result.citizenSex,
+		fine = result.fine,
+		reason = result.reason,
+		date = result.date,
+		payUntil = result.payUntil,
+		paid = result.paid,
+		afterTime = result.afterTime,
+		job = result.job,
+	})
+end
+
 RegisterNetEvent("kfines:apply", function(data)
 	local _source = source
 	ped = GetPlayerPed(_source)
 	xPlayerCoords = GetEntityCoords(ped)
+
+	correct = false
+
+	for _,v in pairs(Config.Jobs[data.job].allowedJobs) do
+		if GetJob(_source) == v then
+			correct = true
+		end
+	end
 	
-	if GetJob(_source) ~= Config.PoliceJob then
+	if not correct then
 		return
 	end
 
@@ -133,7 +142,7 @@ RegisterNetEvent("kfines:apply", function(data)
 	date = data.date:gsub("Z", " "):gsub("T", " ")
 	payUntil = data.payUntil:gsub("Z", " "):gsub("T", " ")
 
-	MySQL.Async.insert("INSERT INTO kfines(copIdentifier, copName, copRank, copBadge, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, date, payUntil, signature) VALUES (@copIdentifier, @copName, @copRank, @copBadge, @citizenIdentifier, @citizenName, @citizenSex, @citizenDOB, @fine, @reason, CONVERT_TZ(@date, '+00:00', @tz), CONVERT_TZ(@payUntil, '+00:00', @tz), @signature)",
+	MySQL.Async.insert("INSERT INTO kfines(copIdentifier, copName, copRank, copBadge, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, date, payUntil, signature,job) VALUES (@copIdentifier, @copName, @copRank, @copBadge, @citizenIdentifier, @citizenName, @citizenSex, @citizenDOB, @fine, @reason, CONVERT_TZ(@date, '+00:00', @tz), CONVERT_TZ(@payUntil, '+00:00', @tz), @signature, @job)",
 		{
 			copIdentifier = GetIdentifiter(_source),
 			copName = data.policeName,
@@ -149,6 +158,7 @@ RegisterNetEvent("kfines:apply", function(data)
 			payUntil = payUntil,
 			signature = data.signature,
 			tz = Config.TimeZone,
+			job = data.job
 		}, function(id)
 			data.id = id
 			TriggerClientEvent("kfines:open", playerToShow, true, data)
@@ -193,15 +203,17 @@ function Pay(id, auto)
 		end
 
 
-		AddSocietyMoney('society_police', fine)
+		job = result[1].job
+
+		AddSocietyMoney(Config.Jobs[job].society, fine)
 		MySQL.Async.execute("UPDATE kfines SET paid=true, afterTime=@afterTime WHERE id=@id", {id = id, afterTime = auto})
-		PayFineWebhook(citizenId, identifier, citizenNick, fine, id, auto) 
+		PayFineWebhook(citizenId, identifier, citizenNick, fine, id, auto, job) 
 	end)
 end
 
 Citizen.CreateThread(function()
     MySQL.ready(function()
-        MySQL.Async.execute("CREATE TABLE IF NOT EXISTS `kfines` (`id` INT NOT NULL AUTO_INCREMENT , `copIdentifier` TEXT NOT NULL , `copName` TEXT NOT NULL , `copRank` TEXT NOT NULL , `copBadge` TEXT NOT NULL , `citizenIdentifier` TEXT NULL , `citizenName` TEXT NOT NULL ,`citizenSex` INT NOT NULL DEFAULT -1,`citizenDOB` TEXT NOT NULL , `fine` INT NOT NULL DEFAULT 0, `reason` TEXT NOT NULL , `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `payUntil` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `signature` TEXT NOT NULL , `paid` BOOLEAN NOT NULL DEFAULT FALSE, `afterTime` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`)) ENGINE = InnoDB;")
+        MySQL.Async.execute("CREATE TABLE IF NOT EXISTS `kfines` (`id` INT NOT NULL AUTO_INCREMENT , `job` TEXT NOT NULL, `copIdentifier` TEXT NOT NULL , `copName` TEXT NOT NULL , `copRank` TEXT NOT NULL , `copBadge` TEXT NOT NULL , `citizenIdentifier` TEXT NULL , `citizenName` TEXT NOT NULL ,`citizenSex` INT NOT NULL DEFAULT -1,`citizenDOB` TEXT NOT NULL , `fine` INT NOT NULL DEFAULT 0, `reason` TEXT NOT NULL , `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `payUntil` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `signature` TEXT NOT NULL , `paid` BOOLEAN NOT NULL DEFAULT FALSE, `afterTime` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`)) ENGINE = InnoDB;")
     end)
 end)
 
@@ -216,7 +228,7 @@ Citizen.CreateThread(function()
 	end
 end)
 
-function CreateFineWebhook(copId, copIdentifier, copNick,copName, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, fineId) 
+function CreateFineWebhook(copId, copIdentifier, copNick,copName, citizenIdentifier, citizenName, citizenSex, citizenDOB, fine, reason, fineId, job) 
 	if Config.WebhookURL == "" then return end
 	
 	local embeds = {
@@ -249,6 +261,11 @@ function CreateFineWebhook(copId, copIdentifier, copNick,copName, citizenIdentif
 				{
 					["name"] = "Citizen Identifier",
 					["value"] = citizenIdentifier,
+					["inline"] = true,
+				},
+				{
+					["name"] = "Job",
+					["value"] = job,
 					["inline"] = true,
 				},
 				{
@@ -290,7 +307,7 @@ function CreateFineWebhook(copId, copIdentifier, copNick,copName, citizenIdentif
 	PerformHttpRequest(Config.WebhookURL, function(err, text, headers) end, 'POST', json.encode({ username = "KFines - Log", avatar_url= "",embeds = embeds}), { ['Content-Type'] = 'application/json' })
 end
 
-function PayFineWebhook(citizenId, citizenIdentifier, citizenNick, fine, fineId, auto) 
+function PayFineWebhook(citizenId, citizenIdentifier, citizenNick, fine, fineId, auto, job) 
 	if Config.WebhookURL == "" then return end
 	
 	local embeds = {
@@ -329,6 +346,11 @@ function PayFineWebhook(citizenId, citizenIdentifier, citizenNick, fine, fineId,
 					["name"] = "Auto",
 					["value"] = auto,
 					["inline"] = true,
+				},
+				{
+					["name"] = "Job",
+					["value"] = job,
+					["inline"] = false,
 				},
 			},
 			["footer"] = {

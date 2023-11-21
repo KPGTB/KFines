@@ -1,7 +1,5 @@
 local translations = {
-    ['nui_department'] = "Los Santos Police Department",
     ['nui_title'] = "Traffic Ticket",
-    ['nui_city'] = "City of Los Santos",
     ['nui_type_officer'] = "Police Officer",
     ['nui_type_citizen'] = "Citizen",
     ['nui_type_ticket'] = "Ticket",
