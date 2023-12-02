@@ -15,7 +15,7 @@ RegisterNetEvent("kfines:open", function(completed, data)
         SendReactMessage("setData",data)
         Citizen.Wait(100)
     end
-
+    SendReactMessage("setLocale", GetLang())
     SendReactMessage("prepare",
         {
             completed = completed,
