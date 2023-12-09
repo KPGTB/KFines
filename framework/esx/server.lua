@@ -69,10 +69,10 @@ function AddSocietyMoney(society, money)
     end)
 end
 
-function GetIdentifierFromData(name, surname, dob, sex)
+function GetIdentifierFromData(name, dob, sex)
     local result = MySQL.Sync.fetchAll(
-		"SELECT * FROM users WHERE firstname=@first AND lastname=@last AND dateofbirth=@dob AND sex=@sex",
-		{first = name, last = surname, dob = dob, sex = sex}
+		"SELECT * FROM users WHERE CONCAT(firstname, ' ', lastname)=@name AND dateofbirth=@dob AND sex=@sex",
+		{name = name, dob = dob, sex = sex}
 	)
     if result == nil or #result == 0 then
         return nil

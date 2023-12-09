@@ -61,7 +61,7 @@ function AddSocietyMoney(society, money)
     exports['qb-management']:AddMoney(society:gsub("society_", ""), money)
 end
 
-function GetIdentifierFromData(name, surname, dob, sex)
+function GetIdentifierFromData(name, dob, sex)
     local _sex = sex
     if _sex == "m" then
         _sex = 0
@@ -78,7 +78,7 @@ function GetIdentifierFromData(name, surname, dob, sex)
 
     for _,v in pairs(result) do
         local charInfo = json.decode(v.charinfo)
-        if charInfo.firstname == name and charInfo.lastname == surname and charInfo.birthdate == dob and charInfo.gender == _sex then
+        if (charInfo.firstname.." "..charInfo.lastname == name) and charInfo.birthdate == dob and charInfo.gender == _sex then
             citizenId = v.citizenid
             break
         end

@@ -92,18 +92,7 @@ RegisterNetEvent("kfines:apply", function(data)
 		sex = "f"
 	end
 
-	name = nil
-	surname = nil
-
-	for i in string.gmatch(data.citizenName, "%S+") do
-		if name == nil then
-			name = i
-		else
-			surname = i
-		end
-	 end
-
-	identifier = GetIdentifierFromData(name,surname,data.citizenDOB,sex)
+	identifier = GetIdentifierFromData(data.citizenName,data.citizenDOB,sex)
 
 	if identifier == nil and not Config.AllowFakePlayers then
 		ShowNotification(_source, _U("not_found"))
