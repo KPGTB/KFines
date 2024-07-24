@@ -29,7 +29,7 @@ Please configure your framework and mysql type in `fxmanifest.lua`
 
 # Documentation
 
-Documentation will be available soon [here](https://docs.kpgtb.pl/)
+Documentation will be available soon [here](https://docs.kpgtb.eu/)
 
 [How to edit UI](https://github.com/KPGTB/fivem-react-template)
 
